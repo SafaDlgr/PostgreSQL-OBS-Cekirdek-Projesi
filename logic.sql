@@ -75,7 +75,6 @@ $$ language plpgsql;
 
 -----------------------------------------------------------------------------------
 
--- 1. sp_ogrenci_derse_kayit
 create or replace procedure sp_ogrenci_derse_kayit(
     p_ogrenci_id int,
     p_ders_id int,
@@ -87,7 +86,6 @@ as $$
 declare
     v_kayit_sayisi int;
 begin
-    -- 1. İş Mantığı Kontrolü: Öğrencinin bu dersi bu dönemde daha önce alıp almadığını kontrol et
     select count(*)
     into v_kayit_sayisi
     from ogrenci_dersleri
@@ -102,8 +100,6 @@ begin
                         p_ogrenci_id, p_ders_id, p_yil, p_donem;
     end if;
 
-
-    -- 2. Kontroller Başarılı: ogrenci_dersleri tablosuna yeni bir kayıt ekle
  
     insert into ogrenci_dersleri (ogrenci_id, ders_id, yil, donem)
     values (p_ogrenci_id, p_ders_id, p_yil, p_donem);
@@ -116,8 +112,6 @@ $$;
 
 ----------------------------------------------------------------------------------------------------------------------
 
--- 2. sp_not_girisi
-
 create or replace procedure sp_not_girisi(
     p_kayit_id int,
     p_vize int, 
@@ -126,7 +120,6 @@ create or replace procedure sp_not_girisi(
 language plpgsql
 as $$
 begin
-    -- 1. İş Mantığı Kontrolü: Notların 0-100 Aralığında Olduğunu Kontrol Et
     if p_vize is not null and (p_vize < 0 or p_vize > 100) then
         raise exception 'NOT_HATASI: Vize notu %s, 0 ile 100 arasında olmalıdır.', p_vize;
     end if;
@@ -135,13 +128,11 @@ begin
         raise exception 'NOT_HATASI: Final notu %s, 0 ile 100 arasında olmalıdır.', p_final;
     end if;
 
-    -- 2. Güncelleme İşlemi: ogrenci_dersleri tablosundaki kaydı bul ve notları güncelle
     update ogrenci_dersleri
     set vize_notu = p_vize,
         final_notu = p_final
     where kayit_id = p_kayit_id;
 
-    -- Kontrol: Kaydın var olup olmadığını kontrol et
     if not found then
         raise exception 'KAYIT_BULUNAMADI: Kayıt ID %s ile eşleşen bir öğrenci ders kaydı bulunamadı.', p_kayit_id;
     end if;
@@ -150,19 +141,6 @@ begin
 
 end;
 $$;
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
